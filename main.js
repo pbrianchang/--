@@ -1,9 +1,9 @@
 const REEL_COUNT = 3;
 const SPIN_DURATION_0 = 3000;
-const SPIN_DURATION_1 = 6000;
-const SPIN_DURATION_2 = 10000;
+const SPIN_DURATION_1 = 3000;
+const SPIN_DURATION_2 = 3000;
 const SPIN_DELAY_1 = 1000;
-const SPIN_DELAY_2 = 5000;
+const SPIN_DELAY_2 = 2000;
 const LENGTH = [3,10,10];
 
 const config = {
@@ -92,16 +92,19 @@ function updateReelNumbers(reel, i, t) {
 
 function spinReels(onComplete) {
   let completedReels = 0;
-  
+  var first = 0
+  var second = 0
   for (let i = 0; i < this.reels.length; i++) {
     const reel = this.reels[i];
     reel.isSpinning = true;
     reel.step = 0;
     
     if (reel.tween) reel.tween.remove();
-    
-    const targetValue = Phaser.Math.Between(0, 9);
-    const spinCount = 5 + (i > 0) * 9+ Phaser.Math.Between(0, 2);
+    const targetValue = Phaser.Math.Between(1, 10-first-second)-1
+    if (i==0 && targetValue == 2) first = 9
+    if (i==1 && targetValue == 6) second = 1
+
+    const spinCount = 5 + (i > 0) * 2+ Phaser.Math.Between(0, 2);
     
     const totalMovement = spinCount * LENGTH[i] + (targetValue - reel.value) + 1;
     
@@ -110,15 +113,7 @@ function spinReels(onComplete) {
       y: `+=${(totalMovement * reel.height)}`,
       duration: (i==0) * SPIN_DURATION_0  + (i==1) * SPIN_DURATION_1 + (i==2) * SPIN_DURATION_2 ,
       delay: (i==1) * SPIN_DELAY_1 + (i==2) * SPIN_DELAY_2,
-      //ease: 'Sine.easeInOut',
-      ease: (t, i) => -(i==0 || i==1) * (Math.cos(Math.PI * t) - 1) / 2 + 
-      (i==2) * (
-      (t<0.2)*(15*t*t)
-      +(t<0.4)*(t>=0.2)*(-15*(t-0.4)*(t-0.4)+1.2)
-      +(t<0.723)*(t>=0.4)*(-2.75*(t-0.4)*(t-0.4)+1.2)
-      +(t<0.92)*(t>=0.723)*(6*(t-0.92)*(t-0.92)+0.68)
-      +(t>=0.92)*(60*(t-0.92)*(t-0.92))
-      ),
+      ease: 'Sine.easeInOut',
       easeParams: [ i ],     
       onUpdate: () => {
         while(reel.numbers[1].y - reel.step * reel.height > 0){
@@ -153,3 +148,4 @@ function spinReels(onComplete) {
     });
   }
 }
+
